@@ -1,4 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Snackbar from "@mui/material/Snackbar";
+import { DataGrid } from "@mui/x-data-grid/DataGrid/DataGrid";
+import { GridColDef } from "@mui/x-data-grid/models/colDef/gridColDef";
+import { signal, useSignalEffect } from "@preact/signals-react";
 import {
   CartesianGrid,
   Legend,
@@ -8,18 +14,10 @@ import {
   Tooltip,
   YAxis,
 } from "recharts";
-
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Snackbar from "@mui/material/Snackbar";
-import { DataGrid } from "@mui/x-data-grid/DataGrid/DataGrid";
-import { GridColDef } from "@mui/x-data-grid/models/colDef/gridColDef";
-import { signal, useSignalEffect } from "@preact/signals-react";
-
-import api from "../Utils/api";
-import pageOptions from "../Utils/page";
-import tooltip from "../Utils/tooltip";
 import { v5 as uuidv5 } from "uuid";
+import { api, fdelay } from "../Utils/api";
+import tooltip from "../Utils/tooltip";
+import { pageOptions } from "../Utils/utils";
 const alert = signal({ error: false, message: "" });
 const rows = signal<any>([]);
 const cell = signal({ id: "" });
@@ -52,6 +50,10 @@ function OverallProd() {
       try {
         const result: Array<any> = await api.get("/getProdStats");
         result.forEach((data) => {
+          const prodPerMin = (data.ProdPerMin.match(/\d+\.\d+/g) || []).map(
+            (data) => Math.round(parseInt(data))
+          );
+          data.ProdPerMin = `P:${prodPerMin[0]}/min | C:${prodPerMin[1]}/min`;
           data.ProdPercent = Math.round(data.ProdPercent);
           data.ConsPercent = Math.round(data.ConsPercent);
           data.CurrentProd = Math.round(data.CurrentProd);
@@ -67,12 +69,9 @@ function OverallProd() {
       }
     };
 
-    const fspeedString = localStorage.getItem("fspeed");
-    const delay = fspeedString ? parseInt(fspeedString) : 1000;
-
     const interval = setInterval(() => {
       fetchData();
-    }, delay);
+    }, fdelay.value);
     return () => {
       clearInterval(interval);
     };
@@ -80,6 +79,7 @@ function OverallProd() {
 
   for (const row of rows.value) {
     const id = uuidv5(row["Name"] + row["ClassName"] + row["Type"], uuidv5.URL);
+    row.CustomID = id;
     if (!overallProdRows[id]) {
       overallProdRows[id] = [];
     }
@@ -128,14 +128,9 @@ function OverallProd() {
             paginationModel: { page: 0, pageSize: 100 },
           },
         }}
-        getRowId={(row) => row.Name}
+        getRowId={(row) => row.CustomID}
         pageSizeOptions={pageOptions()}
-        onCellClick={(v) =>
-          (cell.value.id = uuidv5(
-            v.row["Name"] + v.row["ClassName"] + v.row["Type"],
-            uuidv5.URL
-          ))
-        }
+        onCellClick={(v) => (cell.value.id = String(v.id))}
       />
       <Box
         sx={{
