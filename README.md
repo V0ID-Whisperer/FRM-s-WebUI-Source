@@ -35,7 +35,7 @@ making Fiscit Remote Monitoring possible:
 - [Andre Aquila](https://discordapp.com/users/294943551605702667)
 - [Badger](https://discordapp.com/users/186896287856197633)
 - [BLAndrew575](https://discordapp.com/users/509759568037937152)
-- [GalaxyVOID](https://discordapp.com/users/212243828831289344)
+- [VOID](https://discordapp.com/users/212243828831289344)
 - [FeatheredToast](https://discordapp.com/users/130401633564753920)
 
 Thank you to all who have contributed and helped make Fiscit Remote Monitoring possible!
